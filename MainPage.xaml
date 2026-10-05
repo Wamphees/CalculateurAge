@@ -18,7 +18,13 @@
             <Label Text="{Binding Resultat}" FontSize="20"
                IsVisible="{Binding ResultatVisible}"
                />
-            <Label Text="Historique" FontAttributes="Bold"/>
+            <Label Text="Historique des calculs" FontAttributes="Bold"/>
+            <Label Text="Enregistré sur cet appareil"
+                   FontSize="12"
+                   TextColor="Gray"/>
+            <Label Text="{Binding ErreurHistorique}"
+                   TextColor="Red"
+                   IsVisible="{Binding ErreurHistoriqueVisible}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Historique}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate>
@@ -26,6 +32,8 @@
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
+            <Button Text="Vider l'historique"
+                    Command="{Binding ViderHistoriqueCommand}"/>
             <Label Text="{Binding Statut}" FontSize="18" FontAttributes="Bold"
        IsVisible="{Binding ResultatVisible}"/>
             <Label Text="{Binding JoursRestants}"

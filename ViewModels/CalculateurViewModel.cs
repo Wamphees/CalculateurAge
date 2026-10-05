@@ -1,13 +1,19 @@
 ﻿using System.Collections.ObjectModel;
+using System.Text.Json;
+using Microsoft.Maui.Storage;
+
 namespace CalculateurAge.ViewModels;
 
 // Contient l'ÉTAT de l'écran et les ACTIONS possibles.
 public class CalculateurViewModel : BaseViewModel
 {
+    private const string HistoriquePreferenceKey = "HistoriqueCalculateurAge";
+
     // Champs privés : la vraie donnée.
     private string _nom = "";
-    private string _statuts = "";
+    private string _statut = "";
     private string _erreur = "";
+    private string _erreurHistorique = "";
     private DateTime _dateNaissance
         = DateTime.Today.AddYears(-20);
     private string _resultat = "";
@@ -42,11 +48,12 @@ public class CalculateurViewModel : BaseViewModel
         }
     }
     
-    public string Statuts
+    public string Statut
     {
-        get => _statuts;
-        set => SetField(ref _statuts, value);
+        get => _statut;
+        set => SetField(ref _statut, value);
     }
+
     public string Erreur
     {
         get => _erreur;
@@ -56,13 +63,27 @@ public class CalculateurViewModel : BaseViewModel
                 OnPropertyChanged(nameof(ErreurVisible));
         }
     }
+
+    public string ErreurHistorique
+    {
+        get => _erreurHistorique;
+        set
+        {
+            if (SetField(ref _erreurHistorique, value))
+                OnPropertyChanged(nameof(ErreurHistoriqueVisible));
+        }
+    }
+
     public string JoursRestants
     {
         get => _joursRestants;
         set => SetField(ref _joursRestants, value);
     }
+
     public bool ErreurVisible => !string.IsNullOrEmpty(Erreur);
     public RelayCommand EffacerCommand { get; }
+    public RelayCommand ViderHistoriqueCommand { get; }
+
     public string Resultat
     {
         get => _resultat;
@@ -75,6 +96,10 @@ public class CalculateurViewModel : BaseViewModel
         set => SetField(ref _resultatVisible, value);
     }
     public ObservableCollection<string> Historique { get; } = new();
+
+    public bool ErreurHistoriqueVisible =>
+        !string.IsNullOrEmpty(ErreurHistorique);
+
     // Lié à Button.Command dans le XAML.
     public RelayCommand CalculerCommand { get; }
    
@@ -86,6 +111,15 @@ public class CalculateurViewModel : BaseViewModel
         Statut = "";
         ResultatVisible = false;
     }
+
+    private void ViderHistorique()
+    {
+        Historique.Clear();
+        Preferences.Default.Remove(HistoriquePreferenceKey);
+        ErreurHistorique = "";
+        ViderHistoriqueCommand.Rafraichir();
+    }
+
     private static DateTime ProchainAnniversaire(DateTime naissance)
     {
         DateTime Pour(int an) => new DateTime(an, naissance.Month,
@@ -100,12 +134,43 @@ public class CalculateurViewModel : BaseViewModel
     
     public CalculateurViewModel()
     {
+        ChargerHistorique();
+
         CalculerCommand = new RelayCommand(
             Calculer,
             () => !string.IsNullOrWhiteSpace(Nom)
                   && DateNaissance.Date <= DateTime.Today);
 
         EffacerCommand = new RelayCommand(Effacer);
+        ViderHistoriqueCommand = new RelayCommand(
+            ViderHistorique,
+            () => Historique.Count > 0 || ErreurHistoriqueVisible);
+        Historique.CollectionChanged += (_, _) =>
+            ViderHistoriqueCommand.Rafraichir();
+    }
+
+    private void ChargerHistorique()
+    {
+        var historiqueSauvegarde = Preferences.Default.Get(
+            HistoriquePreferenceKey,
+            string.Empty);
+        if (string.IsNullOrWhiteSpace(historiqueSauvegarde))
+            return;
+
+        try
+        {
+            var lignes = JsonSerializer.Deserialize<List<string>>(
+                historiqueSauvegarde)
+                ?? throw new JsonException("L'historique est vide.");
+
+            foreach (var ligne in lignes)
+                Historique.Add(ligne);
+        }
+        catch (JsonException)
+        {
+            ErreurHistorique =
+                "L'historique enregistré est illisible. Vous pouvez le vider.";
+        }
     }
 
     // La logique métier : aucun contrôle d'interface ici.
@@ -118,7 +183,11 @@ public class CalculateurViewModel : BaseViewModel
 
         Resultat = $"{Nom}, vous avez {age} ans";
         Historique.Insert(0, $"{Nom} : {age} ans");
-        Statuts = age >= 18 ? "Majeur" : "Mineur";
+        Preferences.Default.Set(
+            HistoriquePreferenceKey,
+            JsonSerializer.Serialize(Historique));
+        ErreurHistorique = "";
+        Statut = age >= 18 ? "Majeur" : "Mineur";
         int jours = (ProchainAnniversaire(DateNaissance) - DateTime.Today).Days;
         JoursRestants = jours == 0
             ? "Joyeux anniversaire !"
