@@ -6,7 +6,7 @@ public class CalculateurViewModel : BaseViewModel
 {
     // Champs privés : la vraie donnée.
     private string _nom = "";
-    private string _statut = "";
+    private string _statuts = "";
     private string _erreur = "";
     private DateTime _dateNaissance
         = DateTime.Today.AddYears(-20);
@@ -28,10 +28,10 @@ public class CalculateurViewModel : BaseViewModel
     }
 
     
-    public string Statut
+    public string Statuts
     {
-        get => _statut;
-        set => SetField(ref _statut, value);
+        get => _statuts;
+        set => SetField(ref _statuts, value);
     }
     public string Erreur
     {
@@ -85,7 +85,7 @@ public class CalculateurViewModel : BaseViewModel
 
         Resultat = $"{Nom}, vous avez {age} ans";
         Historique.Insert(0, $"{Nom} : {age} ans");
-        
+        Statuts = age >= 18 ? "Majeur" : "Mineur";
         int jours = (ProchainAnniversaire(DateNaissance) - DateTime.Today).Days;
         JoursRestants = jours == 0
             ? "Joyeux anniversaire !"
