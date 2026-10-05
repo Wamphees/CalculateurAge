@@ -64,6 +64,14 @@ public class CalculateurViewModel : BaseViewModel
     // Lié à Button.Command dans le XAML.
     public RelayCommand CalculerCommand { get; }
    
+   private void Effacer()
+    {
+        Nom = "";
+        DateNaissance = DateTime.Today.AddYears(-20);
+        Resultat = "";
+        Statut = "";
+        ResultatVisible = false;
+    }
     private static DateTime ProchainAnniversaire(DateTime naissance)
     {
         DateTime Pour(int an) => new DateTime(an, naissance.Month,
@@ -74,6 +82,15 @@ public class CalculateurViewModel : BaseViewModel
         return prochain;
     }
     
+    public CalculateurViewModel()
+    {
+        CalculerCommand = new RelayCommand(
+            Calculer,
+            () => !string.IsNullOrWhiteSpace(Nom)
+                  && DateNaissance.Date <= DateTime.Today);
+
+        EffacerCommand = new RelayCommand(Effacer);
+    }
 
     // La logique métier : aucun contrôle d'interface ici.
     private void Calculer()
