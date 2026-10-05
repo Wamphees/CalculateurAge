@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CalculateurAge.MainPage">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+            <Label Text="Nom" FontSize="16"/>
+            <Entry Text="{Binding Nom, Mode=TwoWay}"
+               Placeholder="Votre nom"/>
+            <Label Text="Date de naissance" FontSize="16"/>
+            <DatePicker Date="{Binding DateNaissance}"/>
+            <Label Text="{Binding Erreur}" TextColor="Red"
+       IsVisible="{Binding ErreurVisible}"/>
+            <Button Text="Calculer"
+                Command="{Binding CalculerCommand}"/>
+            <Button Text="Effacer" Command="{Binding EffacerCommand}"/>
+            <Label Text="{Binding Resultat}" FontSize="20"
+               IsVisible="{Binding ResultatVisible}"
+               />
+            <Label Text="Historique" FontAttributes="Bold"/>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Historique}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding .}"/>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+            <Label Text="{Binding Statut}" FontSize="18" FontAttributes="Bold"
+       IsVisible="{Binding ResultatVisible}"/>
+            <Label Text="{Binding JoursRestants}"
+       IsVisible="{Binding ResultatVisible}"/>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
