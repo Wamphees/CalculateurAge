@@ -95,6 +95,8 @@ public class CalculateurViewModel : BaseViewModel
         if (prochain < DateTime.Today) prochain = Pour(DateTime.Today.Year + 1);
         return prochain;
     }
+
+    
     
     public CalculateurViewModel()
     {
