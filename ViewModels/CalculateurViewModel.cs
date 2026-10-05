@@ -27,6 +27,20 @@ public class CalculateurViewModel : BaseViewModel
         }
     }
 
+    public DateTime DateNaissance
+    {
+        get => _dateNaissance;
+        set
+        {
+            if (SetField(ref _dateNaissance, value))
+            {
+                Erreur = value.Date > DateTime.Today
+                    ? "La date de naissance ne peut pas être dans le futur"
+                    : "";
+                CalculerCommand.Rafraichir();
+            }
+        }
+    }
     
     public string Statuts
     {
